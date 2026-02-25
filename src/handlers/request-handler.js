@@ -10,6 +10,7 @@ import { PROMPT_LOG_FILENAME } from '../core/config-manager.js';
 import { handleOllamaRequest, handleOllamaShow } from './ollama-handler.js';
 import { getPluginManager } from '../core/plugin-manager.js';
 import { randomUUID } from 'crypto';
+import { globalRequestQueue } from '../utils/request-queue.js';
 
 /**
  * Generate a short unique request ID (8 characters)
@@ -103,6 +104,18 @@ export function createRequestHandler(config, providerPoolManager) {
             return true;
         }
 
+        // Queue status endpoint
+        if (method === 'GET' && path === '/queue_status') {
+            const { activeCount, queuedCount } = globalRequestQueue.getStatus();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                activeCount,
+                queuedCount,
+                timestamp: new Date().toISOString()
+            }));
+            return true;
+        }
+
         // providers health endpoint
         // url params: provider[string], customName[string], unhealthRatioThreshold[float]
         // 支持provider, customName过滤记录 
@@ -144,12 +157,12 @@ export function createRequestHandler(config, providerPoolManager) {
             currentConfig.MODEL_PROVIDER = modelProviderHeader;
             logger.info(`[Config] MODEL_PROVIDER overridden by header to: ${currentConfig.MODEL_PROVIDER}`);
         }
-          
+
         // Check if the first path segment matches a MODEL_PROVIDER and switch if it does
         // Note: 'ollama' is not a valid MODEL_PROVIDER, it's a protocol prefix for Ollama API compatibility
         const pathSegments = path.split('/').filter(segment => segment.length > 0);
         const isOllamaPath = pathSegments[0] === 'ollama' || path.startsWith('/api/');
-        
+
         if (pathSegments.length > 0 && !isOllamaPath) {
             const firstSegment = pathSegments[0];
             const isValidProvider = Object.values(MODEL_PROVIDER).includes(firstSegment);
@@ -176,7 +189,7 @@ export function createRequestHandler(config, providerPoolManager) {
             res.end(JSON.stringify({ error: { message: 'Unauthorized: API key is invalid or missing.' } }));
             return;
         }
-        
+
         // 2. 执行普通中间件（type!='auth' 的插件）
         const middlewareResult = await pluginManager.executeMiddleware(req, res, requestUrl, currentConfig);
         if (middlewareResult.handled) {

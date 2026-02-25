@@ -1,0 +1,195 @@
+  console.log
+    [2026-02-25 23:47:05.073] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.180] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.181] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.235] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.238] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.239] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.239] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.240] [INFO] [RequestQueue] Task failed: boom. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.241] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.241] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.242] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.267] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.267] [INFO] [RequestQueue] Starting task. Remaining in queue: 1
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.280] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.280] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.295] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.296] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+          at Function.from (<anonymous>)
+
+  console.log
+    [2026-02-25 23:47:05.297] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.298] [INFO] [RequestQueue] Starting task. Remaining in queue: 8
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.298] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.298] [INFO] [RequestQueue] Starting task. Remaining in queue: 7
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.298] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.299] [INFO] [RequestQueue] Starting task. Remaining in queue: 6
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.299] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.299] [INFO] [RequestQueue] Starting task. Remaining in queue: 5
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.299] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.299] [INFO] [RequestQueue] Starting task. Remaining in queue: 4
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.300] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.300] [INFO] [RequestQueue] Starting task. Remaining in queue: 3
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.300] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.300] [INFO] [RequestQueue] Starting task. Remaining in queue: 2
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.301] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.301] [INFO] [RequestQueue] Starting task. Remaining in queue: 1
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.301] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.301] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+  console.log
+    [2026-02-25 23:47:05.301] [INFO] [RequestQueue] Task finished. Picking next.
+
+      at Logger.consoleMethod [as log] (src/utils/logger.js:237:13)
+
+PASS tests/request-queue.test.js (5.346 s)
+  RequestQueue
+    √ runs tasks one at a time — no overlap (165 ms)
+    √ return value propagates to the caller (2 ms)
+    √ errors propagate to the caller and queue continues (2 ms)
+    √ getStatus reports correct counts (55 ms)
+    √ handles many concurrent enqueues in FIFO order (6 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        5.688 s
+Ran all test suites matching /.\\tests\\request-queue.test.js/i.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

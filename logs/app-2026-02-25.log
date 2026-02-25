@@ -1,0 +1,124 @@
+[2026-02-25 23:49:11.374] [INFO] [Initialization] Discovering and initializing plugins...
+[2026-02-25 23:49:11.376] [INFO] [PluginManager] Registered plugin: ai-monitor v1.0.0
+[2026-02-25 23:49:11.381] [INFO] [PluginManager] Registered plugin: api-potluck v1.0.1
+[2026-02-25 23:49:11.382] [INFO] [PluginManager] Registered plugin: default-auth v1.0.0
+[2026-02-25 23:49:11.383] [INFO] [PluginManager] Found plugin for default config: ai-monitor
+[2026-02-25 23:49:11.383] [INFO] [PluginManager] Found plugin for default config: api-potluck
+[2026-02-25 23:49:11.384] [INFO] [PluginManager] Found plugin for default config: default-auth
+[2026-02-25 23:49:11.385] [INFO] [PluginManager] Plugin "ai-monitor" is disabled, skipping init
+[2026-02-25 23:49:11.385] [INFO] [PluginManager] Plugin "api-potluck" is disabled, skipping init
+[2026-02-25 23:49:11.385] [INFO] [Plugins] Loaded 3 plugin(s):
+[2026-02-25 23:49:11.385] [INFO]   ✗ ai-monitor v1.0.0 - AI 接口监控插件 - 捕获请求和响应参数（全链路协议转换监控，流式聚合输出，用于调试和分析）
+[2026-02-25 23:49:11.386] [INFO]   ✗ api-potluck v1.0.1 - API 大锅饭 - Key 管理和用量统计插件<br>管理端：<a href="potluck.html" target="_blank">potluck.html</a><br>用户端：<a href="potluck-user.html" target="_blank">potluck-user.html</a>
+[2026-02-25 23:49:11.386] [INFO]   ✓ default-auth v1.0.0 - 默认 API Key 认证插件
+[2026-02-25 23:49:11.386] [INFO] [Initialization] No provider pools configured. Using single provider mode.
+[2026-02-25 23:49:11.386] [INFO] [Initialization] No provider pools configured. Skipping node initialization.
+[2026-02-25 23:49:11.391] [INFO] --- Unified API Server Configuration ---
+[2026-02-25 23:49:11.391] [INFO]   Primary Model Provider: gemini-cli-oauth
+[2026-02-25 23:49:11.392] [INFO]   System Prompt File: C:\Users\ishmu\Downloads\aiclient2api fix\configs\input_system_prompt.txt
+[2026-02-25 23:49:11.392] [INFO]   System Prompt Mode: append
+[2026-02-25 23:49:11.392] [INFO]   Host: 0.0.0.0
+[2026-02-25 23:49:11.392] [INFO]   Port: 3000
+[2026-02-25 23:49:11.392] [INFO]   Required API Key: 123456
+[2026-02-25 23:49:11.392] [INFO]   Prompt Logging: none
+[2026-02-25 23:49:11.393] [INFO] ------------------------------------------
+[2026-02-25 23:49:11.393] [INFO] 
+Unified API Server running on http://0.0.0.0:3000
+[2026-02-25 23:49:11.393] [INFO] Supports multiple API formats:
+[2026-02-25 23:49:11.393] [INFO]   • OpenAI-compatible: /v1/chat/completions, /v1/responses, /v1/models
+[2026-02-25 23:49:11.393] [INFO]   • Gemini-compatible: /v1beta/models, /v1beta/models/{model}:generateContent
+[2026-02-25 23:49:11.394] [INFO]   • Claude-compatible: /v1/messages
+[2026-02-25 23:49:11.394] [INFO]   • Health check: /health
+[2026-02-25 23:49:11.394] [INFO]   • UI Management Console: http://0.0.0.0:3000/
+[2026-02-25 23:49:14.427] [INFO] [UI] Opened login page in default browser
+[2026-02-25 23:51:19.053] [Req:9a76c00c] [INFO] [Auth] Successfully read password file
+[2026-02-25 23:51:19.053] [Req:9a76c00c] [INFO] [Auth] Validating password, stored password length: 8 , input password length: 8
+[2026-02-25 23:51:19.054] [Req:9a76c00c] [INFO] [Auth] Password validation result: true
+[2026-02-25 23:51:19.618] [Req:2d0c19b2] [INFO] [Usage API] Fetching fresh usage data
+[2026-02-25 23:51:19.621] [Req:79a3f5fc] [INFO] [Usage Cache] Usage data cached to C:\Users\ishmu\Downloads\aiclient2api fix\configs\usage-cache.json
+[2026-02-25 23:51:20.097] [Req:14c45177] [INFO] [Update] Fetching remote tags...
+[2026-02-25 23:57:19.074] [Req:5921782e] [INFO] [iFlow Auth] 生成授权链接: https://iflow.cn/oauth?loginMethod=phone&type=phone&redirect=http%3A%2F%2Flocalhost%3A8087%2Foauth2callback&state=SMsxZ6RWHJiL7bDNZ0db5Q&client_id=10009311001
+[2026-02-25 23:57:19.076] [Req:5921782e] [INFO] [iFlow Auth] OAuth 回调服务器已启动于 0.0.0.0:8087
+[2026-02-25 23:57:26.751] [Req:70d90660] [INFO] [iFlow Auth] 收到授权回调，正在交换令牌...
+[2026-02-25 23:57:27.246] [Req:70d90660] [INFO] [iFlow Auth] 令牌交换成功
+[2026-02-25 23:57:27.492] [Req:70d90660] [INFO] [iFlow Auth] 用户信息获取成功: ishmum88@gmail.com
+[2026-02-25 23:57:27.495] [Req:70d90660] [INFO] [iFlow Auth] 凭据已保存: C:\Users\ishmu\Downloads\aiclient2api fix\configs\iflow\1772042247494_oauth_creds.json
+[2026-02-25 23:57:27.497] [Req:70d90660] [INFO] [Auto-Link] Successfully linked credential: configs\iflow\1772042247494_oauth_creds.json to iFlow API
+[2026-02-25 23:57:27.499] [Req:70d90660] [INFO] [Auto-Link] Added 1 new config(s) to provider pools:
+[2026-02-25 23:57:27.500] [Req:70d90660] [INFO]   iFlow API: 1 config(s)
+[2026-02-25 23:57:27.500] [Req:70d90660] [INFO]     - .\configs\iflow\1772042247494_oauth_creds.json
+[2026-02-25 23:59:04.986] [Req:9986bf5b] [INFO] [Server] Received request: POST http://localhost:3000/v1/chat/completions
+[2026-02-25 23:59:04.987] [Req:9986bf5b] [INFO] [Config] MODEL_PROVIDER overridden by header to: openai-iflow
+[2026-02-25 23:59:04.987] [Req:9986bf5b] [INFO] [Config] Ignoring invalid MODEL_PROVIDER in path segment: v1
+[2026-02-25 23:59:04.988] [Req:9986bf5b] [INFO] [Adapter] getServiceAdapter, provider: openai-iflow, uuid: undefined
+[2026-02-25 23:59:04.988] [Req:9986bf5b] [INFO] [RequestQueue] /v1/chat/completions enqueued. active=0, queued=0
+[2026-02-25 23:59:04.988] [Req:9986bf5b] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+[2026-02-25 23:59:04.989] [Req:9986bf5b] [INFO] [Content Generation] Model: kimi-k2-5, Stream: false
+[2026-02-25 23:59:04.989] [Req:9986bf5b] [INFO] [Request Convert] Request format matches backend provider. No conversion needed.
+[2026-02-25 23:59:04.990] [Req:18873d81] [INFO] [Server] Received request: POST http://localhost:3000/v1/chat/completions
+[2026-02-25 23:59:04.990] [Req:18873d81] [INFO] [Config] MODEL_PROVIDER overridden by header to: openai-iflow
+[2026-02-25 23:59:04.990] [Req:18873d81] [INFO] [Config] Ignoring invalid MODEL_PROVIDER in path segment: v1
+[2026-02-25 23:59:04.990] [Req:18873d81] [INFO] [Adapter] getServiceAdapter, provider: openai-iflow, uuid: undefined
+[2026-02-25 23:59:04.990] [Req:18873d81] [INFO] [RequestQueue] /v1/chat/completions enqueued. active=1, queued=0
+[2026-02-25 23:59:04.991] [Req:09759734] [INFO] [Server] Received request: POST http://localhost:3000/v1/chat/completions
+[2026-02-25 23:59:04.991] [Req:09759734] [INFO] [Config] MODEL_PROVIDER overridden by header to: openai-iflow
+[2026-02-25 23:59:04.991] [Req:09759734] [INFO] [Config] Ignoring invalid MODEL_PROVIDER in path segment: v1
+[2026-02-25 23:59:04.991] [Req:09759734] [INFO] [Adapter] getServiceAdapter, provider: openai-iflow, uuid: undefined
+[2026-02-25 23:59:04.992] [Req:09759734] [INFO] [RequestQueue] /v1/chat/completions enqueued. active=1, queued=1
+[2026-02-25 23:59:04.993] [Req:09759734] [INFO] [System Prompt Manager] System prompt updated in file for provider 'openai'.
+[2026-02-25 23:59:04.993] [Req:09759734] [WARN] iflowApiService not initialized, attempting to re-initialize...
+[2026-02-25 23:59:04.993] [Req:09759734] [INFO] [iFlow] Initializing iFlow API Service...
+[2026-02-25 23:59:04.994] [Req:09759734] [WARN] [iFlow] Token file not found: C:\Users\ishmu\.iflow\oauth_creds.json
+[2026-02-25 23:59:04.994] [Req:09759734] [INFO] [iFlow] Initialization complete.
+[2026-02-25 23:59:06.168] [Req:09759734] [INFO] [RequestQueue] Task finished. Picking next.
+[2026-02-25 23:59:06.168] [Req:09759734] [INFO] [RequestQueue] Starting task. Remaining in queue: 1
+[2026-02-25 23:59:06.169] [INFO] [Content Generation] Model: kimi-k2-5, Stream: false
+[2026-02-25 23:59:06.169] [INFO] [Request Convert] Request format matches backend provider. No conversion needed.
+[2026-02-25 23:59:06.170] [INFO] [System Prompt Manager] System prompt updated in file for provider 'openai'.
+[2026-02-25 23:59:06.414] [INFO] [RequestQueue] Task finished. Picking next.
+[2026-02-25 23:59:06.414] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+[2026-02-25 23:59:06.415] [INFO] [Content Generation] Model: kimi-k2-5, Stream: false
+[2026-02-25 23:59:06.415] [INFO] [Request Convert] Request format matches backend provider. No conversion needed.
+[2026-02-25 23:59:06.416] [INFO] [System Prompt Manager] System prompt updated in file for provider 'openai'.
+[2026-02-25 23:59:06.664] [INFO] [RequestQueue] Task finished. Picking next.
+[2026-02-25 23:59:07.044] [Req:f127de5d] [INFO] [Server] Received request: GET http://localhost:3000/queue_status
+[2026-02-25 23:59:27.496] [Req:397f093d] [INFO] [Server] Received request: GET http://localhost:3000/v1/models
+[2026-02-25 23:59:27.496] [Req:397f093d] [INFO] [Config] MODEL_PROVIDER overridden by header to: openai-iflow
+[2026-02-25 23:59:27.497] [Req:397f093d] [INFO] [Config] Ignoring invalid MODEL_PROVIDER in path segment: v1
+[2026-02-25 23:59:27.497] [Req:397f093d] [INFO] [Adapter] getServiceAdapter, provider: openai-iflow, uuid: undefined
+[2026-02-25 23:59:27.765] [Req:397f093d] [INFO] [ModelList Convert] Model list format matches. No conversion needed.
+[2026-02-25 23:59:27.765] [Req:397f093d] [INFO] [ModelList Response] Sending model list to client: {"status":"434","msg":"Invalid apiKey，get your apiKey: https://iflow.cn/","body":null}
+[2026-02-26 00:01:22.370] [Req:779d7402] [INFO] [Server] Received request: POST http://localhost:3000/v1/chat/completions
+[2026-02-26 00:01:22.371] [Req:779d7402] [INFO] [Config] MODEL_PROVIDER overridden by header to: openai-iflow
+[2026-02-26 00:01:22.371] [Req:779d7402] [INFO] [Config] Ignoring invalid MODEL_PROVIDER in path segment: v1
+[2026-02-26 00:01:22.371] [Req:779d7402] [INFO] [Adapter] getServiceAdapter, provider: openai-iflow, uuid: undefined
+[2026-02-26 00:01:22.372] [Req:779d7402] [INFO] [RequestQueue] /v1/chat/completions enqueued. active=0, queued=0
+[2026-02-26 00:01:22.372] [Req:779d7402] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+[2026-02-26 00:01:22.372] [Req:779d7402] [INFO] [Content Generation] Model: kimi-k2, Stream: false
+[2026-02-26 00:01:22.372] [Req:779d7402] [INFO] [Request Convert] Request format matches backend provider. No conversion needed.
+[2026-02-26 00:01:22.373] [Req:01978a9b] [INFO] [Server] Received request: POST http://localhost:3000/v1/chat/completions
+[2026-02-26 00:01:22.373] [Req:01978a9b] [INFO] [Config] MODEL_PROVIDER overridden by header to: openai-iflow
+[2026-02-26 00:01:22.373] [Req:01978a9b] [INFO] [Config] Ignoring invalid MODEL_PROVIDER in path segment: v1
+[2026-02-26 00:01:22.374] [Req:01978a9b] [INFO] [Adapter] getServiceAdapter, provider: openai-iflow, uuid: undefined
+[2026-02-26 00:01:22.374] [Req:01978a9b] [INFO] [RequestQueue] /v1/chat/completions enqueued. active=1, queued=0
+[2026-02-26 00:01:22.374] [Req:5ba7776a] [INFO] [Server] Received request: POST http://localhost:3000/v1/chat/completions
+[2026-02-26 00:01:22.374] [Req:5ba7776a] [INFO] [Config] MODEL_PROVIDER overridden by header to: openai-iflow
+[2026-02-26 00:01:22.375] [Req:5ba7776a] [INFO] [Config] Ignoring invalid MODEL_PROVIDER in path segment: v1
+[2026-02-26 00:01:22.375] [Req:5ba7776a] [INFO] [Adapter] getServiceAdapter, provider: openai-iflow, uuid: undefined
+[2026-02-26 00:01:22.375] [Req:5ba7776a] [INFO] [RequestQueue] /v1/chat/completions enqueued. active=1, queued=1
+[2026-02-26 00:01:22.376] [Req:5ba7776a] [INFO] [System Prompt Manager] System prompt updated in file for provider 'openai'.
+[2026-02-26 00:01:23.378] [Req:5ba7776a] [INFO] [RequestQueue] Task finished. Picking next.
+[2026-02-26 00:01:23.379] [Req:5ba7776a] [INFO] [RequestQueue] Starting task. Remaining in queue: 1
+[2026-02-26 00:01:23.379] [INFO] [Content Generation] Model: kimi-k2, Stream: false
+[2026-02-26 00:01:23.380] [INFO] [Request Convert] Request format matches backend provider. No conversion needed.
+[2026-02-26 00:01:23.381] [INFO] [System Prompt Manager] System prompt updated in file for provider 'openai'.
+[2026-02-26 00:01:23.609] [INFO] [RequestQueue] Task finished. Picking next.
+[2026-02-26 00:01:23.610] [INFO] [RequestQueue] Starting task. Remaining in queue: 0
+[2026-02-26 00:01:23.610] [INFO] [Content Generation] Model: kimi-k2, Stream: false
+[2026-02-26 00:01:23.610] [INFO] [Request Convert] Request format matches backend provider. No conversion needed.
+[2026-02-26 00:01:23.611] [INFO] [System Prompt Manager] System prompt updated in file for provider 'openai'.
+[2026-02-26 00:01:23.848] [INFO] [RequestQueue] Task finished. Picking next.
+[2026-02-26 00:01:23.850] [Req:78bd35f9] [INFO] [Server] Received request: GET http://localhost:3000/queue_status
+[2026-02-26 00:04:13.977] [Req:c863dd26] [INFO] [Usage API] Returning cached usage data
+[2026-02-26 00:04:14.403] [Req:478a4427] [INFO] [Update] Fetching remote tags...
+[2026-02-26 00:06:33.429] [Req:7f21bfc6] [INFO] [Server] Received SIGINT

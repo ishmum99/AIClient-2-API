@@ -6,6 +6,7 @@ import {
 } from '../utils/common.js';
 import { getProviderPoolManager } from './service-manager.js';
 import logger from '../utils/logger.js';
+import { globalRequestQueue } from '../utils/request-queue.js';
 /**
  * Handle API authentication and routing
  * @param {string} method - The HTTP method
@@ -33,23 +34,31 @@ export async function handleAPIRequests(method, path, req, res, currentConfig, a
         }
     }
 
-    // Route content generation requests
+    // Route content generation requests — all run serially through the global queue
     if (method === 'POST') {
         if (path === '/v1/chat/completions') {
-            await handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.OPENAI_CHAT, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path);
+            const { activeCount, queuedCount } = globalRequestQueue.getStatus();
+            logger.info(`[RequestQueue] /v1/chat/completions enqueued. active=${activeCount}, queued=${queuedCount}`);
+            await globalRequestQueue.enqueue(() => handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.OPENAI_CHAT, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path));
             return true;
         }
         if (path === '/v1/responses') {
-            await handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.OPENAI_RESPONSES, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path);
+            const { activeCount, queuedCount } = globalRequestQueue.getStatus();
+            logger.info(`[RequestQueue] /v1/responses enqueued. active=${activeCount}, queued=${queuedCount}`);
+            await globalRequestQueue.enqueue(() => handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.OPENAI_RESPONSES, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path));
             return true;
         }
         const geminiUrlPattern = new RegExp(`/v1beta/models/(.+?):(${API_ACTIONS.GENERATE_CONTENT}|${API_ACTIONS.STREAM_GENERATE_CONTENT})`);
         if (geminiUrlPattern.test(path)) {
-            await handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.GEMINI_CONTENT, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path);
+            const { activeCount, queuedCount } = globalRequestQueue.getStatus();
+            logger.info(`[RequestQueue] ${path} enqueued. active=${activeCount}, queued=${queuedCount}`);
+            await globalRequestQueue.enqueue(() => handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.GEMINI_CONTENT, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path));
             return true;
         }
         if (path === '/v1/messages') {
-            await handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.CLAUDE_MESSAGE, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path);
+            const { activeCount, queuedCount } = globalRequestQueue.getStatus();
+            logger.info(`[RequestQueue] /v1/messages enqueued. active=${activeCount}, queued=${queuedCount}`);
+            await globalRequestQueue.enqueue(() => handleContentGenerationRequest(req, res, apiService, ENDPOINT_TYPE.CLAUDE_MESSAGE, currentConfig, promptLogFilename, providerPoolManager, currentConfig.uuid, path));
             return true;
         }
     }
@@ -76,9 +85,9 @@ export function initializeAPIManagement(services) {
                 // For pooled providers, refreshToken should be handled by individual instances
                 // For single instances, this remains relevant
                 if (serviceAdapter.config?.uuid && providerPoolManager) {
-                    providerPoolManager._enqueueRefresh(serviceAdapter.config.MODEL_PROVIDER, { 
-                        config: serviceAdapter.config, 
-                        uuid: serviceAdapter.config.uuid 
+                    providerPoolManager._enqueueRefresh(serviceAdapter.config.MODEL_PROVIDER, {
+                        config: serviceAdapter.config,
+                        uuid: serviceAdapter.config.uuid
                     });
                 } else {
                     await serviceAdapter.refreshToken();
