@@ -159,24 +159,26 @@ export class ClaudeConverter extends BaseConverter {
 
                 // 处理assistant消息中的工具调用
                 if (role === "assistant" && Array.isArray(msg.content) && msg.content.length > 0) {
-                    const firstPart = msg.content[0];
-                    if (firstPart.type === "tool_use") {
-                        const funcName = firstPart.name || "";
-                        const funcArgs = firstPart.input || {};
+                    const toolUseParts = msg.content.filter(p => p && p.type === "tool_use");
+                    if (toolUseParts.length > 0) {
+                        // Collect any leading text content before tool calls
+                        let textContent = '';
+                        for (const p of msg.content) {
+                            if (p && p.type === 'text') textContent += p.text || '';
+                            else break; // stop at first non-text block
+                        }
                         tempOpenAIMessages.push({
                             role: "assistant",
-                            content: '',
-                            tool_calls: [
-                                {
-                                    id: firstPart.id || `call_${funcName}_1`,
-                                    type: "function",
-                                    function: {
-                                        name: funcName,
-                                        arguments: JSON.stringify(funcArgs)
-                                    },
-                                    index: firstPart.index || 0
-                                }
-                            ]
+                            content: textContent || '',
+                            tool_calls: toolUseParts.map((p, idx) => ({
+                                id: p.id || `call_${p.name || 'tool'}_${idx}`,
+                                type: "function",
+                                function: {
+                                    name: p.name || "",
+                                    arguments: JSON.stringify(p.input || {})
+                                },
+                                index: p.index !== undefined ? p.index : idx
+                            }))
                         });
                         continue;
                     }
@@ -323,7 +325,7 @@ export class ClaudeConverter extends BaseConverter {
 
         // 检查是否包含 tool_use
         const hasToolUse = claudeResponse.content.some(block => block && block.type === 'tool_use');
-        
+
         let message = {
             role: "assistant",
             content: null
@@ -436,7 +438,7 @@ export class ClaudeConverter extends BaseConverter {
         // content_block_start 事件
         if (claudeChunk.type === 'content_block_start') {
             const contentBlock = claudeChunk.content_block;
-            
+
             // 处理 tool_use 类型
             if (contentBlock && contentBlock.type === 'tool_use') {
                 return {
@@ -483,7 +485,7 @@ export class ClaudeConverter extends BaseConverter {
         // content_block_delta 事件
         if (claudeChunk.type === 'content_block_delta') {
             const delta = claudeChunk.delta;
-            
+
             // 处理 text_delta
             if (delta && delta.type === 'text_delta') {
                 return {
@@ -564,9 +566,9 @@ export class ClaudeConverter extends BaseConverter {
         if (claudeChunk.type === 'message_delta') {
             const stopReason = claudeChunk.delta?.stop_reason;
             const finishReason = stopReason === 'end_turn' ? 'stop' :
-                                stopReason === 'max_tokens' ? 'length' :
-                                stopReason === 'tool_use' ? 'tool_calls' :
-                                stopReason || 'stop';
+                stopReason === 'max_tokens' ? 'length' :
+                    stopReason === 'tool_use' ? 'tool_calls' :
+                        stopReason || 'stop';
 
             const chunk = {
                 id: chunkId,
@@ -581,7 +583,7 @@ export class ClaudeConverter extends BaseConverter {
                 }]
             };
 
-            if(claudeChunk.usage){
+            if (claudeChunk.usage) {
                 chunk.usage = {
                     prompt_tokens: claudeChunk.usage.input_tokens || 0,
                     completion_tokens: claudeChunk.usage.output_tokens || 0,
@@ -677,12 +679,12 @@ export class ClaudeConverter extends BaseConverter {
      */
     processClaudeContentToOpenAIContent(content) {
         if (!content || !Array.isArray(content)) return [];
-        
+
         const contentArray = [];
-        
+
         content.forEach(block => {
             if (!block) return;
-            
+
             switch (block.type) {
                 case 'text':
                     if (block.text) {
@@ -692,7 +694,7 @@ export class ClaudeConverter extends BaseConverter {
                         });
                     }
                     break;
-                    
+
                 case 'image':
                     if (block.source && block.source.type === 'base64') {
                         contentArray.push({
@@ -703,21 +705,21 @@ export class ClaudeConverter extends BaseConverter {
                         });
                     }
                     break;
-                    
+
                 case 'tool_use':
                     contentArray.push({
                         type: 'text',
                         text: `[Tool use: ${block.name}]`
                     });
                     break;
-                    
+
                 case 'tool_result':
                     contentArray.push({
                         type: 'text',
                         text: typeof block.content === 'string' ? block.content : JSON.stringify(block.content)
                     });
                     break;
-                    
+
                 default:
                     if (block.text) {
                         contentArray.push({
@@ -727,7 +729,7 @@ export class ClaudeConverter extends BaseConverter {
                     }
             }
         });
-        
+
         return contentArray;
     }
 
@@ -736,12 +738,12 @@ export class ClaudeConverter extends BaseConverter {
      */
     processClaudeResponseContent(content) {
         if (!content || !Array.isArray(content)) return '';
-        
+
         const contentArray = [];
-        
+
         content.forEach(block => {
             if (!block) return;
-            
+
             switch (block.type) {
                 case 'text':
                     contentArray.push({
@@ -749,7 +751,7 @@ export class ClaudeConverter extends BaseConverter {
                         text: block.text || ''
                     });
                     break;
-                    
+
                 case 'image':
                     if (block.source && block.source.type === 'base64') {
                         contentArray.push({
@@ -760,7 +762,7 @@ export class ClaudeConverter extends BaseConverter {
                         });
                     }
                     break;
-                    
+
                 default:
                     if (block.text) {
                         contentArray.push({
@@ -770,7 +772,7 @@ export class ClaudeConverter extends BaseConverter {
                     }
             }
         });
-        
+
         return contentArray.length === 1 && contentArray[0].type === 'text'
             ? contentArray[0].text
             : contentArray;
@@ -839,17 +841,17 @@ export class ClaudeConverter extends BaseConverter {
                 // 处理内容
                 if (Array.isArray(content)) {
                     const parts = [];
-                    
+
                     content.forEach(block => {
                         if (!block || typeof block !== 'object') return;
-                        
+
                         switch (block.type) {
                             case 'text':
                                 if (typeof block.text === 'string') {
                                     parts.push({ text: block.text });
                                 }
                                 break;
-                            
+
                             // 添加 thinking 块处理
                             case 'thinking':
                                 if (typeof block.thinking === 'string' && block.thinking.length > 0) {
@@ -864,24 +866,24 @@ export class ClaudeConverter extends BaseConverter {
                                     parts.push(thinkingPart);
                                 }
                                 break;
-                            
+
                             // [FIX] 处理 redacted_thinking 块
                             case 'redacted_thinking':
                                 // 将 redacted_thinking 转换为普通文本
                                 if (block.data) {
-                                    parts.push({ 
-                                        text: `[Redacted Thinking: ${block.data}]` 
+                                    parts.push({
+                                        text: `[Redacted Thinking: ${block.data}]`
                                     });
                                 }
                                 break;
-                                
+
                             case 'tool_use':
                                 // 转换为 Gemini functionCall 格式
                                 if (block.name && block.input) {
                                     const args = typeof block.input === 'string'
                                         ? block.input
                                         : JSON.stringify(block.input);
-                                    
+
                                     // 验证 args 是有效的 JSON 对象
                                     try {
                                         const parsedArgs = JSON.parse(args);
@@ -908,7 +910,7 @@ export class ClaudeConverter extends BaseConverter {
                                     }
                                 }
                                 break;
-                                
+
                             case 'tool_result':
                                 // 转换为 Gemini functionResponse 格式
                                 // 的实现，正确处理 tool_use_id 到函数名的映射
@@ -917,7 +919,7 @@ export class ClaudeConverter extends BaseConverter {
                                     // 尝试从之前的 tool_use 块中查找对应的函数名
                                     // 如果找不到，则从 tool_use_id 中提取
                                     let funcName = toolCallId;
-                                    
+
                                     // 检查是否有缓存的 tool_id -> name 映射
                                     // 格式通常是 "funcName-uuid" 或 "toolu_xxx"
                                     if (toolCallId.startsWith('toolu_')) {
@@ -931,10 +933,10 @@ export class ClaudeConverter extends BaseConverter {
                                             funcName = toolCallIdParts.slice(0, -1).join('-');
                                         }
                                     }
-                                    
+
                                     // 获取响应数据
                                     let responseData = block.content;
-                                    
+
                                     // 的 tool_result_compressor 逻辑
                                     // 处理嵌套的 content 数组（如图片等）
                                     if (Array.isArray(responseData)) {
@@ -947,7 +949,7 @@ export class ClaudeConverter extends BaseConverter {
                                     } else if (typeof responseData !== 'string') {
                                         responseData = JSON.stringify(responseData);
                                     }
-                                    
+
                                     parts.push({
                                         functionResponse: {
                                             name: funcName,
@@ -958,7 +960,7 @@ export class ClaudeConverter extends BaseConverter {
                                     });
                                 }
                                 break;
-                                
+
                             case 'image':
                                 if (block.source && block.source.type === 'base64') {
                                     parts.push({
@@ -971,7 +973,7 @@ export class ClaudeConverter extends BaseConverter {
                                 break;
                         }
                     });
-                    
+
                     if (parts.length > 0) {
                         geminiRequest.contents.push({
                             role: geminiRole,
@@ -990,7 +992,7 @@ export class ClaudeConverter extends BaseConverter {
 
         // 添加生成配置
         const generationConfig = {};
-        
+
         if (claudeRequest.max_tokens !== undefined) {
             generationConfig.maxOutputTokens = claudeRequest.max_tokens;
         }
@@ -1003,7 +1005,7 @@ export class ClaudeConverter extends BaseConverter {
         if (claudeRequest.top_k !== undefined) {
             generationConfig.topK = claudeRequest.top_k;
         }
-        
+
         // 处理 thinking 配置 - 转换为 Gemini thinkingBudget
         if (claudeRequest.thinking && claudeRequest.thinking.type === 'enabled') {
             if (claudeRequest.thinking.budget_tokens !== undefined) {
@@ -1015,7 +1017,7 @@ export class ClaudeConverter extends BaseConverter {
                 generationConfig.thinkingConfig.include_thoughts = true;
             }
         }
-        
+
         if (Object.keys(generationConfig).length > 0) {
             geminiRequest.generationConfig = generationConfig;
         }
@@ -1023,7 +1025,7 @@ export class ClaudeConverter extends BaseConverter {
         // 处理工具 - 使用 parametersJsonSchema 格式
         if (Array.isArray(claudeRequest.tools) && claudeRequest.tools.length > 0) {
             const functionDeclarations = [];
-            
+
             claudeRequest.tools.forEach(tool => {
                 if (!tool || typeof tool !== 'object' || !tool.name) {
                     logger.warn("Skipping invalid tool declaration in claudeRequest.tools.");
@@ -1045,15 +1047,15 @@ export class ClaudeConverter extends BaseConverter {
                     name: String(tool.name),
                     description: String(tool.description || '')
                 };
-                
+
                 // 使用 parametersJsonSchema 而不是 parameters
                 if (inputSchema) {
                     funcDecl.parametersJsonSchema = inputSchema;
                 }
-                
+
                 functionDeclarations.push(funcDecl);
             });
-            
+
             if (functionDeclarations.length > 0) {
                 geminiRequest.tools = [{
                     functionDeclarations: functionDeclarations
@@ -1078,24 +1080,24 @@ export class ClaudeConverter extends BaseConverter {
      */
     cleanUrlFormatFromSchema(schema) {
         if (!schema || typeof schema !== 'object') return;
-        
+
         // 如果是属性对象，检查并清理 format
         if (schema.type === 'string' && schema.format === 'uri') {
             delete schema.format;
         }
-        
+
         // 递归处理 properties
         if (schema.properties && typeof schema.properties === 'object') {
             Object.values(schema.properties).forEach(prop => {
                 this.cleanUrlFormatFromSchema(prop);
             });
         }
-        
+
         // 递归处理 items（数组类型）
         if (schema.items) {
             this.cleanUrlFormatFromSchema(schema.items);
         }
-        
+
         // 递归处理 additionalProperties
         if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
             this.cleanUrlFormatFromSchema(schema.additionalProperties);
@@ -1254,11 +1256,11 @@ export class ClaudeConverter extends BaseConverter {
                     };
                 }
             }
-            
+
             // content_block_delta 事件
             if (claudeChunk.type === 'content_block_delta') {
                 const delta = claudeChunk.delta;
-                
+
                 // 处理 text_delta
                 if (delta && delta.type === 'text_delta') {
                     return {
@@ -1272,7 +1274,7 @@ export class ClaudeConverter extends BaseConverter {
                         }]
                     };
                 }
-                
+
                 // [FIX] 处理 thinking_delta - 转换为 Gemini 的 thought 格式
                 if (delta && delta.type === 'thinking_delta') {
                     return {
@@ -1287,33 +1289,33 @@ export class ClaudeConverter extends BaseConverter {
                         }]
                     };
                 }
-                
+
                 // [FIX] 处理 signature_delta
                 if (delta && delta.type === 'signature_delta') {
                     // 签名通常与前一个 thinking 块关联
                     // 在流式场景中，我们可以忽略或记录
                     return null;
                 }
-                
+
                 // [FIX] 处理 input_json_delta (tool arguments)
                 if (delta && delta.type === 'input_json_delta') {
                     // 工具参数增量，Gemini 不支持增量参数，忽略
                     return null;
                 }
             }
-            
+
             // message_delta 事件 - 流结束
             if (claudeChunk.type === 'message_delta') {
                 const stopReason = claudeChunk.delta?.stop_reason;
                 const result = {
                     candidates: [{
                         finishReason: stopReason === 'end_turn' ? 'STOP' :
-                                    stopReason === 'max_tokens' ? 'MAX_TOKENS' :
-                                    stopReason === 'tool_use' ? 'STOP' :
+                            stopReason === 'max_tokens' ? 'MAX_TOKENS' :
+                                stopReason === 'tool_use' ? 'STOP' :
                                     'OTHER'
                     }]
                 };
-                
+
                 // 添加 usage 信息
                 if (claudeChunk.usage) {
                     result.usageMetadata = {
@@ -1331,7 +1333,7 @@ export class ClaudeConverter extends BaseConverter {
                         }]
                     };
                 }
-                
+
                 return result;
             }
         }
@@ -1380,9 +1382,9 @@ export class ClaudeConverter extends BaseConverter {
                         break;
 
                     case 'image':
-                        if (block.source && typeof block.source === 'object' && 
+                        if (block.source && typeof block.source === 'object' &&
                             block.source.type === 'base64' &&
-                            typeof block.source.media_type === 'string' && 
+                            typeof block.source.media_type === 'string' &&
                             typeof block.source.data === 'string') {
                             parts.push({
                                 inlineData: {
@@ -1394,7 +1396,7 @@ export class ClaudeConverter extends BaseConverter {
                         break;
 
                     case 'tool_use':
-                        if (typeof block.name === 'string' && 
+                        if (typeof block.name === 'string' &&
                             block.input && typeof block.input === 'object') {
                             parts.push({
                                 functionCall: {
@@ -1445,11 +1447,11 @@ export class ClaudeConverter extends BaseConverter {
                 return { functionCallingConfig: { mode: 'NONE' } };
             case 'tool':
                 if (claudeToolChoice.name && typeof claudeToolChoice.name === 'string') {
-                    return { 
-                        functionCallingConfig: { 
-                            mode: 'ANY', 
-                            allowedFunctionNames: [claudeToolChoice.name] 
-                        } 
+                    return {
+                        functionCallingConfig: {
+                            mode: 'ANY',
+                            allowedFunctionNames: [claudeToolChoice.name]
+                        }
                     };
                 }
                 logger.warn("Invalid tool name in claudeToolChoice of type 'tool'.");
@@ -1675,7 +1677,7 @@ export class ClaudeConverter extends BaseConverter {
         // content_block_start 事件
         if (claudeChunk.type === 'content_block_start') {
             const contentBlock = claudeChunk.content_block;
-            
+
             // 对于 tool_use 类型，添加工具调用项
             if (contentBlock && contentBlock.type === 'tool_use') {
                 events.push({
@@ -1696,7 +1698,7 @@ export class ClaudeConverter extends BaseConverter {
         // content_block_delta 事件
         if (claudeChunk.type === 'content_block_delta') {
             const delta = claudeChunk.delta;
-            
+
             // 处理文本增量
             if (delta && delta.type === 'text_delta') {
                 events.push({
@@ -1747,7 +1749,7 @@ export class ClaudeConverter extends BaseConverter {
             //     generateOutputItemDone(responseId),
             //     generateResponseCompleted(responseId)
             // );
-            
+
             // 如果有 usage 信息，更新最后一个事件
             if (claudeChunk.usage && events.length > 0) {
                 const lastEvent = events[events.length - 1];
@@ -1957,7 +1959,7 @@ export class ClaudeConverter extends BaseConverter {
                     parameters: this._normalizeToolParameters(tool.input_schema),
                     strict: false
                 };
-                
+
                 // 移除 parameters.$schema
                 if (convertedTool.parameters && convertedTool.parameters.$schema) {
                     delete convertedTool.parameters.$schema;
@@ -2054,7 +2056,7 @@ export class ClaudeConverter extends BaseConverter {
             const budgetTokens = claudeRequest.thinking.budget_tokens;
             codexRequest.reasoning.effort = determineReasoningEffortFromBudget(budgetTokens);
         } else if (claudeRequest.thinking && claudeRequest.thinking.type === "disabled") {
-             codexRequest.reasoning.effort = determineReasoningEffortFromBudget(0);
+            codexRequest.reasoning.effort = determineReasoningEffortFromBudget(0);
         }
 
         // 注入 Codex 指令 (对应 末尾的特殊逻辑)
@@ -2127,7 +2129,7 @@ export class ClaudeConverter extends BaseConverter {
     toCodexStreamChunk(codexChunk, model) {
         const type = codexChunk.type;
         const resId = codexChunk.response?.id || 'default';
-        
+
         if (type === 'response.created') {
             return {
                 type: "message_start",

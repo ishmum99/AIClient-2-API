@@ -90,14 +90,14 @@ async function loadTokenFromFile(filePath) {
         const absolutePath = path.isAbsolute(filePath)
             ? filePath
             : path.join(process.cwd(), filePath);
-        
+
         const data = await fs.readFile(absolutePath, 'utf-8');
         const json = JSON.parse(data);
-        
+
         // 记录加载的 token 信息
         const refreshToken = json.refreshToken || json.refresh_token || '';
         logger.info(`[iFlow] Token loaded from: ${filePath} (refresh_token: ${refreshToken ? refreshToken.substring(0, 8) + '...' : 'EMPTY'})`);
-        
+
         return IFlowTokenStorage.fromJSON(json);
     } catch (error) {
         if (error.code === 'ENOENT') {
@@ -154,19 +154,19 @@ async function refreshOAuthTokens(refreshToken, axiosInstance = null) {
     if (!refreshToken || refreshToken.trim() === '') {
         throw new Error('[iFlow] refresh_token is empty');
     }
-    
+
     logger.info('[iFlow] Refreshing OAuth tokens...');
-    
+
     // 构建请求参数
     const params = new URLSearchParams();
     params.append('grant_type', 'refresh_token');
     params.append('refresh_token', refreshToken);
     params.append('client_id', IFLOW_OAUTH_CLIENT_ID);
     params.append('client_secret', IFLOW_OAUTH_CLIENT_SECRET);
-    
+
     // 构建 Basic Auth header
     const basicAuth = Buffer.from(`${IFLOW_OAUTH_CLIENT_ID}:${IFLOW_OAUTH_CLIENT_SECRET}`).toString('base64');
-    
+
     const requestConfig = {
         method: 'POST',
         url: IFLOW_OAUTH_TOKEN_ENDPOINT,
@@ -178,24 +178,24 @@ async function refreshOAuthTokens(refreshToken, axiosInstance = null) {
         data: params.toString(),
         timeout: 30000
     };
-    
+
     try {
         const response = axiosInstance
             ? await axiosInstance.request(requestConfig)
             : await axios.request(requestConfig);
-        
+
         const tokenResp = response.data;
-        
+
         // logger.info('[iFlow] Token response:', JSON.stringify(tokenResp));
         if (!tokenResp.access_token) {
             logger.error('[iFlow] Token response:', JSON.stringify(tokenResp));
             throw new Error('[iFlow] Missing access_token in response');
         }
-        
+
         // 计算过期时间（毫秒级时间戳）
         const expiresIn = tokenResp.expires_in || 3600;
         const expireTimestamp = Date.now() + expiresIn * 1000;
-        
+
         const tokenData = {
             accessToken: tokenResp.access_token,
             refreshToken: tokenResp.refresh_token || refreshToken,
@@ -203,16 +203,16 @@ async function refreshOAuthTokens(refreshToken, axiosInstance = null) {
             scope: tokenResp.scope || '',
             expiryDate: expireTimestamp // 毫秒级时间戳
         };
-        
+
         logger.info('[iFlow] OAuth tokens refreshed successfully');
-        
+
         // 获取用户信息以获取 API Key
         const userInfo = await fetchUserInfo(tokenData.accessToken, axiosInstance);
         if (userInfo && userInfo.apiKey) {
             tokenData.apiKey = userInfo.apiKey;
             tokenData.email = userInfo.email || userInfo.phone || '';
         }
-        
+
         return tokenData;
     } catch (error) {
         const status = error.response?.status;
@@ -232,9 +232,9 @@ async function fetchUserInfo(accessToken, axiosInstance = null) {
     if (!accessToken || accessToken.trim() === '') {
         throw new Error('[iFlow] access_token is empty');
     }
-    
+
     const url = `${IFLOW_USER_INFO_ENDPOINT}?accessToken=${encodeURIComponent(accessToken)}`;
-    
+
     const requestConfig = {
         method: 'GET',
         url,
@@ -243,22 +243,22 @@ async function fetchUserInfo(accessToken, axiosInstance = null) {
         },
         timeout: 30000
     };
-    
+
     try {
         const response = axiosInstance
             ? await axiosInstance.request(requestConfig)
             : await axios.request(requestConfig);
-        
+
         const result = response.data;
         // logger.info('[iFlow] User info response:', JSON.stringify(result));
         if (!result.success) {
             throw new Error('[iFlow] User info request not successful');
         }
-        
+
         if (!result.data || !result.data.apiKey) {
             throw new Error('[iFlow] Missing apiKey in user info response');
         }
-        
+
         return {
             apiKey: result.data.apiKey,
             email: result.data.email || '',
@@ -322,20 +322,20 @@ function isThinkingModel(model) {
  */
 function applyIFlowThinkingConfig(body, model) {
     if (!body || !model) return body;
-    
+
     const lowerModel = model.toLowerCase();
     const reasoningEffort = body.reasoning_effort;
-    
+
     // 如果没有 reasoning_effort，直接返回
     if (reasoningEffort === undefined) return body;
-    
+
     const enableThinking = reasoningEffort !== 'none' && reasoningEffort !== '';
-    
+
     // 创建新对象，移除 reasoning_effort 和 thinking
     const newBody = { ...body };
     delete newBody.reasoning_effort;
     delete newBody.thinking;
-    
+
     // GLM-4.x: 使用 chat_template_kwargs
     if (lowerModel.startsWith('glm-4')) {
         newBody.chat_template_kwargs = {
@@ -347,18 +347,18 @@ function applyIFlowThinkingConfig(body, model) {
         }
         return newBody;
     }
-    
+
     // Qwen thinking 模型: 保持 thinking 配置
     if (lowerModel.includes('thinking')) {
         // Qwen thinking 模型默认启用 thinking，不需要额外配置
         return newBody;
     }
-    
+
     // DeepSeek R1: 推理模型，不需要额外配置
     if (lowerModel.startsWith('deepseek-r1')) {
         return newBody;
     }
-    
+
     return newBody;
 }
 
@@ -375,31 +375,31 @@ function applyIFlowThinkingConfig(body, model) {
  */
 function preserveReasoningContentInMessages(body, model) {
     if (!body || !model) return body;
-    
+
     const lowerModel = model.toLowerCase();
-    
+
     // 只对支持 thinking 且需要历史保留的模型应用
     const needsPreservation = lowerModel.startsWith('glm-4') ||
-                              lowerModel.startsWith('minimax-m2');
-    
+        lowerModel.startsWith('minimax-m2');
+
     if (!needsPreservation) {
         return body;
     }
-    
+
     const messages = body.messages;
     if (!Array.isArray(messages)) return body;
-    
+
     // 检查是否有 assistant 消息包含 reasoning_content
     const hasReasoningContent = messages.some(msg =>
         msg.role === 'assistant' && msg.reasoning_content && msg.reasoning_content !== ''
     );
-    
+
     // 如果 reasoning content 已经存在，说明消息格式正确
     // 客户端已经正确地在历史中保留了推理内容
     if (hasReasoningContent) {
         logger.debug(`[iFlow] reasoning_content found in message history for ${model}`);
     }
-    
+
     return body;
 }
 
@@ -412,7 +412,7 @@ function preserveReasoningContentInMessages(body, model) {
  */
 function ensureToolsArray(body) {
     if (!body || !body.tools) return body;
-    
+
     if (Array.isArray(body.tools) && body.tools.length === 0) {
         return {
             ...body,
@@ -426,8 +426,100 @@ function ensureToolsArray(body) {
             }]
         };
     }
-    
+
     return body;
+}
+
+/**
+ * Models that do not support native tool result messages via iFlow.
+ * For these models, tool messages are converted to user messages.
+ */
+const IFLOW_NO_NATIVE_TOOL_RESULT_MODELS = ['kimi-k2', 'kimi-k2.5', 'kimi-k2-0905'];
+
+/**
+ * Convert tool role messages to user messages for models that don't support
+ * the native OpenAI tool result format via iFlow.
+ *
+ * Strategy:
+ * - Keep assistant messages with tool_calls as-is (these trigger tool calling)
+ * - Convert tool result messages into user messages with the result text
+ * - If tool results exist, remove the tools array (prevents iFlow from
+ *   conflicting on round-2 requests)
+ *
+ * @param {Object} body - request body
+ * @returns {Object} - processed body
+ */
+function convertToolMessagesToUserMessages(body) {
+    if (!body || !Array.isArray(body.messages)) return body;
+
+    const hasToolResultMessages = body.messages.some(m => m.role === 'tool');
+    if (!hasToolResultMessages) return body;
+
+    logger.info('[iFlow] Converting tool result messages to user messages (kimi native tool format workaround)');
+
+    const convertedMessages = [];
+    let pendingAssistantMsg = null;
+    let pendingToolResults = [];
+
+    for (const msg of body.messages) {
+        if (msg.role === 'assistant' && msg.tool_calls && msg.tool_calls.length > 0) {
+            // Flush any previous pending state
+            if (pendingAssistantMsg) {
+                convertedMessages.push(pendingAssistantMsg);
+            }
+            if (pendingToolResults.length > 0) {
+                convertedMessages.push({ role: 'user', content: pendingToolResults.join('\n\n') });
+                pendingToolResults = [];
+            }
+            // Only keep the assistant message if it has real text content.
+            // If content is null (pure tool-call message), skip it entirely —
+            // adding a placeholder like [Searching: toolname] causes the model
+            // to echo that text as its final answer instead of synthesizing results.
+            if (msg.content && msg.content.trim() !== '') {
+                pendingAssistantMsg = { role: 'assistant', content: msg.content };
+            } else {
+                pendingAssistantMsg = null;
+            }
+        } else if (msg.role === 'tool') {
+            // Convert tool result to text, labeled with tool_call_id for clarity
+            const label = msg.tool_call_id ? `[Tool result for ${msg.tool_call_id}]` : '[Tool result]';
+            let resultText = `${label}:\n${msg.content}`;
+            try {
+                const parsed = JSON.parse(msg.content);
+                if (Array.isArray(parsed)) {
+                    resultText = `${label}:\n` + parsed.map((r, i) =>
+                        `[${i + 1}] ${r.title || ''}: ${r.content || r.url || ''}`
+                    ).join('\n');
+                } else if (parsed !== null && typeof parsed === 'object') {
+                    resultText = `${label}:\n${JSON.stringify(parsed, null, 2)}`;
+                }
+            } catch (e) { /* keep raw */ }
+            pendingToolResults.push(resultText);
+        } else {
+            // Flush pending assistant+tool results before this message
+            if (pendingAssistantMsg) {
+                convertedMessages.push(pendingAssistantMsg);
+                pendingAssistantMsg = null;
+            }
+            if (pendingToolResults.length > 0) {
+                convertedMessages.push({ role: 'user', content: pendingToolResults.join('\n\n') });
+                pendingToolResults = [];
+            }
+            convertedMessages.push(msg);
+        }
+    }
+
+    // Flush any remaining
+    if (pendingAssistantMsg) convertedMessages.push(pendingAssistantMsg);
+    if (pendingToolResults.length > 0) {
+        convertedMessages.push({ role: 'user', content: pendingToolResults.join('\n\n') });
+    }
+
+    const result = { ...body, messages: convertedMessages };
+    // Remove tools and tool_choice since we're in content-injection mode
+    delete result.tools;
+    delete result.tool_choice;
+    return result;
 }
 
 /**
@@ -438,19 +530,25 @@ function ensureToolsArray(body) {
  */
 function preprocessRequestBody(body, model) {
     let processedBody = { ...body };
-    
+
     // 确保模型名称正确
     processedBody.model = model;
-    
+
+    // For kimi models: convert tool result messages to user messages
+    // (iFlow returns 403 when tool role messages are sent)
+    if (model && IFLOW_NO_NATIVE_TOOL_RESULT_MODELS.some(m => model.toLowerCase().startsWith(m))) {
+        processedBody = convertToolMessagesToUserMessages(processedBody);
+    }
+
     // 应用 iFlow thinking 配置
     processedBody = applyIFlowThinkingConfig(processedBody, model);
-    
+
     // 保留 reasoning_content
     processedBody = preserveReasoningContentInMessages(processedBody, model);
-    
+
     // 确保 tools 数组
     processedBody = ensureToolsArray(processedBody);
-    
+
     return processedBody;
 }
 
@@ -507,12 +605,12 @@ export class IFlowApiService {
      */
     async initialize() {
         if (this.isInitialized) return;
-        
+
         logger.info('[iFlow] Initializing iFlow API Service...');
         // 注意：V2 读写分离架构下，初始化不再执行同步认证/刷新逻辑
         // 仅执行基础的凭证加载
         await this.loadCredentials();
-        
+
         this.isInitialized = true;
         logger.info('[iFlow] Initialization complete.');
     }
@@ -623,21 +721,21 @@ export class IFlowApiService {
         if (!this.tokenStorage || !this.tokenStorage.refreshToken) {
             throw new Error('[iFlow] No refresh_token available');
         }
-        
+
         const oldAccessToken = this.tokenStorage.accessToken;
         if (oldAccessToken) {
             logger.info(`[iFlow] Refreshing access token, old: ${this._maskToken(oldAccessToken)}`);
         }
-        
+
         // 调用刷新函数
         const oldRefreshToken = this.tokenStorage.refreshToken;
         const tokenData = await refreshOAuthTokens(oldRefreshToken, this.axiosInstance);
-        
+
         // 更新 tokenStorage - 必须更新 refreshToken，因为 OAuth 服务器可能返回新的 refresh_token
         this.tokenStorage.accessToken = tokenData.accessToken;
         // 始终更新 refreshToken，即使服务器没有返回新的（tokenData.refreshToken 会回退到旧值）
         this.tokenStorage.refreshToken = tokenData.refreshToken;
-        
+
         // 记录 refresh_token 是否发生变化
         if (tokenData.refreshToken !== oldRefreshToken) {
             logger.info(`[iFlow] refresh_token has been rotated (old: ${this._maskToken(oldRefreshToken)}, new: ${this._maskToken(tokenData.refreshToken)})`);
@@ -652,13 +750,13 @@ export class IFlowApiService {
         if (tokenData.email) {
             this.tokenStorage.email = tokenData.email;
         }
-        
+
         // 更新 axios 实例的 Authorization header
         this.axiosInstance.defaults.headers['Authorization'] = `Bearer ${this.apiKey}`;
-        
+
         // 保存到文件
         await saveTokenToFile(this.tokenFilePath, this.tokenStorage, this.uuid);
-        
+
         logger.info(`[iFlow] Token refresh successful, new: ${this._maskToken(tokenData.accessToken)}`);
     }
 
@@ -682,7 +780,7 @@ export class IFlowApiService {
         if (!this.isInitialized) {
             await this.initialize();
         }
-        
+
         try {
             await this._refreshOAuthTokens();
             return true;
@@ -701,14 +799,14 @@ export class IFlowApiService {
             if (!this.tokenStorage || !this.tokenStorage.expiryDate) {
                 return false;
             }
-            
+
             // 授权文件时效48小时，判断是否过期或接近过期 （45小时）
             const cronNearMinutes = 60 * 45;
-            
+
             // 解析过期时间
             let expireTime;
             const expireValue = this.tokenStorage.expiryDate;
-            
+
             // 检查是否为数字（毫秒时间戳）
             if (typeof expireValue === 'number') {
                 expireTime = expireValue;
@@ -727,15 +825,15 @@ export class IFlowApiService {
                 logger.error(`[iFlow] Invalid expiry date type: ${typeof expireValue}`);
                 return false;
             }
-            
+
             if (isNaN(expireTime)) {
                 logger.error(`[iFlow] Error parsing expiry date: ${expireValue}`);
                 return false;
             }
-            
+
             const { message, isNearExpiry } = formatExpiryLog('iFlow', expireTime, cronNearMinutes);
             logger.info(message);
-            
+
             return isNearExpiry;
         } catch (error) {
             logger.error(`[iFlow] Error checking expiry date: ${error.message}`);
@@ -751,13 +849,13 @@ export class IFlowApiService {
     _getHeaders(stream = false) {
         // 生成 session-id
         const sessionID = 'session-' + generateUUID();
-        
+
         // 生成时间戳（毫秒）
         const timestamp = Date.now();
-        
+
         // 生成签名
         const signature = createIFlowSignature(IFLOW_USER_AGENT, sessionID, timestamp, this.apiKey);
-        
+
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${this.apiKey}`,
@@ -765,18 +863,18 @@ export class IFlowApiService {
             'session-id': sessionID,
             'x-iflow-timestamp': timestamp.toString(),
         };
-        
+
         // 只有在签名生成成功时才添加
         if (signature) {
             headers['x-iflow-signature'] = signature;
         }
-        
+
         if (stream) {
             headers['Accept'] = 'text/event-stream';
         } else {
             headers['Accept'] = 'application/json';
         }
-        
+
         return headers;
     }
 
@@ -800,14 +898,15 @@ export class IFlowApiService {
             const data = error.response?.data;
             const errorCode = error.code;
             const errorMessage = error.message || '';
-            
+
             // 检查是否为可重试的网络错误
             const isNetworkError = isRetryableNetworkError(error);
-            
-            // Handle 401/400 - refresh auth and retry once
-            if ((status === 400 || status === 401) && !isRetry) {
-                logger.info(`[iFlow] Received ${status}. Triggering background refresh via PoolManager...`);
-                
+
+            // Handle 401/400/434 - refresh auth and retry once
+            // iFlow uses 434 to indicate an invalid/expired API key (same semantics as 401)
+            if ((status === 400 || status === 401 || status === 434) && !isRetry) {
+                logger.info(`[iFlow] Received ${status} (invalid/expired API key). Triggering background refresh via PoolManager...`);
+
                 // 标记当前凭证为不健康（会自动进入刷新队列）
                 const poolManager = getProviderPoolManager();
                 if (poolManager && this.uuid) {
@@ -885,17 +984,17 @@ export class IFlowApiService {
             for await (const chunk of stream) {
                 // 将 chunk 转换为字符串并追加到缓冲区
                 buffer += chunk.toString();
-                
+
                 // 逐行处理
                 let newlineIndex;
                 while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
                     // 提取一行（不包含换行符）
                     const line = buffer.substring(0, newlineIndex);
                     buffer = buffer.substring(newlineIndex + 1);
-                    
+
                     // 去除行首尾空白（处理 \r\n 情况）
                     const trimmedLine = line.trim();
-                    
+
                     // 跳过空行（SSE 格式中的分隔符）
                     if (trimmedLine === '') {
                         continue;
@@ -910,17 +1009,17 @@ export class IFlowApiService {
                             jsonData = jsonData.substring(1);
                         }
                         jsonData = jsonData.trim();
-                        
+
                         // 检查流结束标记
                         if (jsonData === '[DONE]') {
                             return; // 流结束
                         }
-                        
+
                         // 跳过空数据
                         if (jsonData === '') {
                             continue;
                         }
-                        
+
                         try {
                             const parsedChunk = JSON.parse(jsonData);
                             yield parsedChunk;
@@ -932,7 +1031,7 @@ export class IFlowApiService {
                     // 忽略其他 SSE 字段（如 event:, id:, retry: 等）
                 }
             }
-            
+
             // 处理缓冲区中剩余的数据（如果有的话）
             if (buffer.trim() !== '') {
                 const trimmedLine = buffer.trim();
@@ -942,7 +1041,7 @@ export class IFlowApiService {
                         jsonData = jsonData.substring(1);
                     }
                     jsonData = jsonData.trim();
-                    
+
                     if (jsonData !== '[DONE]' && jsonData !== '') {
                         try {
                             const parsedChunk = JSON.parse(jsonData);
@@ -958,14 +1057,15 @@ export class IFlowApiService {
             const data = error.response?.data;
             const errorCode = error.code;
             const errorMessage = error.message || '';
-            
+
             // 检查是否为可重试的网络错误
             const isNetworkError = isRetryableNetworkError(error);
-            
-            // Handle 401/400 during stream - refresh auth and retry once
-            if ((status === 400 || status === 401) && !isRetry) {
-                logger.info(`[iFlow] Received ${status} during stream. Triggering background refresh via PoolManager...`);
-                
+
+            // Handle 401/400/434 during stream - refresh auth and retry once
+            // iFlow uses 434 to indicate an invalid/expired API key (same semantics as 401)
+            if ((status === 400 || status === 401 || status === 434) && !isRetry) {
+                logger.info(`[iFlow] Received ${status} during stream (invalid/expired API key). Triggering background refresh via PoolManager...`);
+
                 // 标记当前凭证为不健康（会自动进入刷新队列）
                 const poolManager = getProviderPoolManager();
                 if (poolManager && this.uuid) {
@@ -1033,7 +1133,7 @@ export class IFlowApiService {
             this.config._monitorRequestId = requestBody._monitorRequestId;
             delete requestBody._monitorRequestId;
         }
-        
+
         // 检查 token 是否即将过期，如果是则推送到刷新队列
         if (this.isExpiryDateNear()) {
             const poolManager = getProviderPoolManager();
@@ -1044,7 +1144,7 @@ export class IFlowApiService {
                 });
             }
         }
-        
+
         return this.callApi('/chat/completions', requestBody, model);
     }
 
@@ -1061,7 +1161,7 @@ export class IFlowApiService {
             this.config._monitorRequestId = requestBody._monitorRequestId;
             delete requestBody._monitorRequestId;
         }
-        
+
         // 检查 token 是否即将过期，如果是则推送到刷新队列
         if (this.isExpiryDateNear()) {
             const poolManager = getProviderPoolManager();
@@ -1072,7 +1172,7 @@ export class IFlowApiService {
                 });
             }
         }
-        
+
         yield* this.streamApi('/chat/completions', requestBody, model);
     }
 
@@ -1083,15 +1183,15 @@ export class IFlowApiService {
         if (!this.isInitialized) {
             await this.initialize();
         }
-        
+
         // 需要手动添加的模型列表
         const manualModels = ['glm-4.7', 'glm-5', 'kimi-k2.5', 'minimax-m2.1', 'minimax-m2.5'];
-        
+
         try {
             const response = await this.axiosInstance.get('/models', {
                 headers: this._getHeaders(false)
             });
-            
+
             // 检查返回数据中是否包含手动添加的模型，如果没有则添加
             const modelsData = response.data;
             if (modelsData && modelsData.data && Array.isArray(modelsData.data)) {
@@ -1109,7 +1209,7 @@ export class IFlowApiService {
                     }
                 }
             }
-            
+
             return modelsData;
         } catch (error) {
             logger.warn('[iFlow] Failed to fetch models from API, using default list:', error.message);
